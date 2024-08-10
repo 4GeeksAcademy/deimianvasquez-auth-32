@@ -13,24 +13,25 @@ const getState = ({ getStore, getActions, setStore }) => {
 					background: "white",
 					initial: "white"
 				}
-			]
+			],
+			token: localStorage.getItem("token") || null
 		},
 		actions: {
 			// Use getActions to call a function within a fuction
 			exampleFunction: () => {
 				getActions().changeColor(0, "green");
-				
+
 			},
 
 			getMessage: async () => {
-				try{
+				try {
 					// fetching data from the backend
 					const resp = await fetch(process.env.BACKEND_URL + "/api/hello")
 					const data = await resp.json()
 					setStore({ message: data.message })
 					// don't forget to return something, that is how the async resolves
 					return data;
-				}catch(error){
+				} catch (error) {
 					console.log("Error loading message from backend", error)
 				}
 			},
@@ -47,6 +48,70 @@ const getState = ({ getStore, getActions, setStore }) => {
 
 				//reset the global store
 				setStore({ demo: demo });
+			},
+			register: async (user) => {
+				try {
+					const response = await fetch(`${process.env.BACKEND_URL}/api/user`, {
+						method: "POST",
+						headers: {
+							"Content-Type": "application/json"
+						},
+						body: JSON.stringify(user)
+					})
+					const data = await response.json()
+					if (response.status === 201) {
+						return true
+					} else {
+						return false
+					}
+
+				} catch (error) {
+					console.log(error)
+				}
+			},
+			login: async (user) => {
+				try {
+					const response = await fetch(`${process.env.BACKEND_URL}/api/login`, {
+						method: "POST",
+						headers: {
+							"Content-Type": "application/json"
+						},
+						body: JSON.stringify(user)
+					})
+					const data = await response.json()
+					if (response.status == 200) {
+						setStore({
+							token: data.token
+						})
+						localStorage.setItem("token", data.token)
+						return true
+					} else {
+						return false
+					}
+
+				} catch (error) {
+					console.log(error)
+				}
+			},
+			logout: () => {
+				setStore({
+					token: null
+				})
+				localStorage.removeItem("token")
+			},
+			getAllUsers: async () => {
+				try {
+					const response = await fetch(`${process.env.BACKEND_URL}/api/user`, {
+						method: "GET",
+						headers: {
+							"Authorization": `Bearer ${getStore().token}`
+						}
+					})
+					return response.status
+
+				} catch (error) {
+					console.log(error)
+				}
 			}
 		}
 	};

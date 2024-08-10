@@ -7,6 +7,8 @@ from api.utils import generate_sitemap, APIException
 from flask_cors import CORS
 from flask_jwt_extended import create_access_token, jwt_required, get_jwt_identity
 from werkzeug.security import generate_password_hash, check_password_hash
+from base64 import b64encode
+import os
 
 
 api = Blueprint('api', __name__)
@@ -14,12 +16,12 @@ api = Blueprint('api', __name__)
 # Allow CORS requests to this API
 CORS(api)
 
-def set_password(password):
-    return generate_password_hash(password)
+def set_password(password, salt):
+    return generate_password_hash(f"{password}{salt}")
 
 
-def check_password(hash_password, password):
-    return check_password_hash(hash_password, password)
+def check_password(hash_password, password, salt):
+    return check_password_hash(hash_password, f"{password}{salt}")
 
 
 @api.route('/hello', methods=['POST', 'GET'])
@@ -32,21 +34,24 @@ def handle_hello():
     return jsonify(response_body), 200
 
 
+#register user
 @api.route("/user", methods=["POST"])
 def add_user():
     body = request.json
 
+    lastname = body.get("lastname", None)
     email = body.get("email", None)
     password = body.get("password", None)
 
-    if email is None or password is None:
+
+
+    if email is None or password is None or lastname is None:
         return jsonify("you need an the email and a password"), 400
     
     else:
-        password = set_password(password)
-        user = User(email=email, password=password)
-
-
+        salt = b64encode(os.urandom(32)).decode("utf-8")
+        password = set_password(password, salt)
+        user = User(email=email, password=password, lastname=lastname, salt=salt)
 
         try:
             db.session.add(user)
@@ -92,9 +97,12 @@ def login():
         if user is None:
             return jsonify({"message":"bad email"}), 400
         else:
-            if check_password(user.password, password):
+            if check_password(user.password, password, user.salt):
                 token = create_access_token(identity=user.id)
                 return jsonify({"token":token}), 200
             else:
                 return jsonify({"message":"bad password"}), 400
 
+# enviar emails,
+# guardar imagenes en cloudinary
+# recuperar contraseña
