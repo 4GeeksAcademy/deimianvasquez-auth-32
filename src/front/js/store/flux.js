@@ -58,12 +58,7 @@ const getState = ({ getStore, getActions, setStore }) => {
 						},
 						body: JSON.stringify(user)
 					})
-					const data = await response.json()
-					if (response.status === 201) {
-						return true
-					} else {
-						return false
-					}
+					return response.status
 
 				} catch (error) {
 					console.log(error)
@@ -109,6 +104,40 @@ const getState = ({ getStore, getActions, setStore }) => {
 					})
 					return response.status
 
+				} catch (error) {
+					console.log(error)
+				}
+			},
+			resetPassword: async (email) => {
+				try {
+					const response = await fetch(`${process.env.BACKEND_URL}/api/reset-password`,
+						{
+							method: "POST",
+							headers: {
+								"Content-Type": "application/json"
+							},
+							body: JSON.stringify(email)
+
+						}
+					)
+
+					console.log(response)
+
+				} catch (error) {
+					console.log(error)
+				}
+			},
+			updatePassword: async (tokenUpdate, newPass) => {
+				try {
+					let response = await fetch(`${process.env.BACKEND_URL}/api/update-password`, {
+						method: "PUT",
+						headers: {
+							"Authorization": `Bearer ${tokenUpdate}`,
+							"Content-Type": "application/json"
+						},
+						body: JSON.stringify(newPass)
+					})
+					console.log(response)
 				} catch (error) {
 					console.log(error)
 				}

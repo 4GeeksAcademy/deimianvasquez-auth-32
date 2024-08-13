@@ -29,12 +29,13 @@ const Register = () => {
 
         response
             .then((res) => {
-                if (res) {
+                if (res == 201) {
                     setUser(initialState)
                     alert("Usuario registrado exitosamente")
+                } else if (res == 400) {
+                    alert("El usuario ya existe")
                 } else {
-                    alert("Error al registar el usuario")
-
+                    alert("Error al registrar el usuario, si el proble persiste comuniquese con el admin de la web")
                 }
             })
     }
