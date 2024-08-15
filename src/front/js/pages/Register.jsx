@@ -23,7 +23,15 @@ const Register = () => {
 
     const handleSubmit = (event) => {
         event.preventDefault()
-        if (user.lastname.trim() == "") return
+
+        const formData = new FormData();
+
+        formData.append("lastname", user.lastname)
+        formData.append("email", user.email)
+        formData.append("password", user.password)
+        formData.append("avatar", user.avatar)
+
+        console.log(formData)
 
         const response = actions.register(user)
 
@@ -85,8 +93,10 @@ const Register = () => {
                                 className="form-control"
                                 id="txtAvatar"
                                 name="avatar"
-                                value={user.avatar}
-                                onChange={handleChange}
+                                // value={user.avatar}
+                                onChange={(event) => {
+                                    setUser({ ...user, avatar: event.target.files[0] })
+                                }}
                             />
                         </div>
 

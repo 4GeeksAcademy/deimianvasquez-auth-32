@@ -11,6 +11,7 @@ from base64 import b64encode
 import os
 from api.utils import set_password, send_email
 from datetime import timedelta
+import cloudinary.uploader as uploader
 
 
 api = Blueprint('api', __name__)
@@ -41,14 +42,26 @@ def handle_hello():
 #register user
 @api.route("/user", methods=["POST"])
 def add_user():
-    body = request.json
+    data_form = request.form
+    data_files = request.files
 
-    lastname = body.get("lastname", None)
-    email = body.get("email", None)
-    password = body.get("password", None)
+    data = {
+        "lastname":data_form.get("lastname"),
+        "email":data_form.get("email"),
+        "password": data_form.get("password"),
+        "avatar": data_files.get("avatar")
+    }
+
+    print(data)
 
 
-    if email is None or password is None or lastname is None:
+    lastname = data.get("lastname", None)
+    email = data.get("email", None)
+    password = data.get("password", None)
+    avatar = data.get("avatar", None)
+
+
+    if email is None or password is None or lastname is None or avatar is None:
         return jsonify("you need an the email and a password"), 400
     
     else:
@@ -61,7 +74,21 @@ def add_user():
 
         salt = b64encode(os.urandom(32)).decode("utf-8")
         password = set_password(password, salt)
-        user = User(email=email, password=password, lastname=lastname, salt=salt)
+        
+        # guardo el avatar em la nube(cloudinary)
+        result_cloud = uploader.upload(avatar)
+
+        print(result_cloud.get("secure_url"))
+        print(result_cloud.get("public_id"))
+
+
+        # aqui es donde creamos el usuario a registrar
+        user = User(
+                email=email, password=password, 
+                lastname=lastname, 
+                salt=salt, 
+                avatar=result_cloud.get("secure_url"), 
+                public_id_avatar=result_cloud.get("public_id"))
 
         try:
             db.session.add(user)
@@ -72,6 +99,8 @@ def add_user():
             print(error.args)
             db.session.rollback()
             return jsonify({"message":f"error: {error}"}), 500
+
+    # return jsonify("estamos trabajando por usted"), 201
         
 
 

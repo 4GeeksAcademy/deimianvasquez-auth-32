@@ -50,13 +50,14 @@ const getState = ({ getStore, getActions, setStore }) => {
 				setStore({ demo: demo });
 			},
 			register: async (user) => {
+				console.log(user)
 				try {
 					const response = await fetch(`${process.env.BACKEND_URL}/api/user`, {
 						method: "POST",
 						headers: {
-							"Content-Type": "application/json"
+							'Content-Type': 'multipart/form-data'
 						},
-						body: JSON.stringify(user)
+						body: user
 					})
 					return response.status
 
