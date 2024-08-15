@@ -33,7 +33,7 @@ const Register = () => {
 
         console.log(formData)
 
-        const response = actions.register(user)
+        const response = actions.register(formData)
 
         response
             .then((res) => {

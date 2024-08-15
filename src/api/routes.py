@@ -107,12 +107,14 @@ def add_user():
 @api.route("/user", methods=["GET"])
 @jwt_required()
 def get_all_users():
-    # user = User.query.get(get_jwt_identity())
+    user = User.query.get(get_jwt_identity())
 
-    # if user.email == "deimianvasquez@gmail.com":
-    user_all = User.query.all()
-    user_all = list(map(lambda item: item.serialize(), user_all))
-    return jsonify(user_all), 200
+    print(user)
+
+    if user is None:
+        return jsonify({"message":"user not found"}), 404
+
+    return jsonify(user.serialize()), 200
     # else:
     #     return jsonify("NO autorizado, sorry"), 401
 
