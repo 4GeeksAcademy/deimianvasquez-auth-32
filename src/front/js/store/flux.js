@@ -54,9 +54,6 @@ const getState = ({ getStore, getActions, setStore }) => {
 				try {
 					const response = await fetch(`${process.env.BACKEND_URL}/api/user`, {
 						method: "POST",
-						headers: {
-							'Content-Type': 'multipart/form-data'
-						},
 						body: user
 					})
 					return response.status
